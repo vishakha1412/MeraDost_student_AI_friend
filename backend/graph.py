@@ -29,9 +29,7 @@ from rag_utils import retrieve_context, has_documents
 
 load_dotenv()
 
-# ----------------------------------------------------------------------------
-# LLM (Groq -- fast, free-tier friendly, no torch/transformers needed)
-# ----------------------------------------------------------------------------
+
 llm = ChatGroq(
     model="llama-3.3-70b-versatile",
     temperature=0.4,
@@ -42,20 +40,15 @@ tavily_search = None
 if os.getenv("TAVILY_API_KEY"):
     tavily_search = TavilySearch(max_results=5)
 
-
-# ----------------------------------------------------------------------------
-# Graph state
-# ----------------------------------------------------------------------------
+ 
 class ChatState(TypedDict):
     messages: Annotated[list, add_messages]
     mode: str
     session_id: str
-    extra: dict  # e.g. {"topic": "DBMS", "role": "SDE Intern", "difficulty": "medium"}
+    extra: dict  
 
 
-# ----------------------------------------------------------------------------
-# System prompts per mode
-# ----------------------------------------------------------------------------
+ 
 BASE_PERSONA = (
     "You are MeraDost ('My Friend' in Hindi), a warm, encouraging AI study "
     "companion for Indian college students. Be clear, concise, and use "
@@ -106,11 +99,7 @@ def _last_human_text(messages) -> str:
         if isinstance(m, HumanMessage):
             return m.content
     return ""
-
-
-# ----------------------------------------------------------------------------
-# Nodes
-# ----------------------------------------------------------------------------
+ 
 def chat_node(state: ChatState):
     system = SystemMessage(content=_system_for("chat", state.get("extra")))
     response = llm.invoke([system, *state["messages"]])
@@ -210,11 +199,7 @@ def route_mode(state: ChatState) -> str:
     if mode not in {"chat", "rag", "research", "interview", "exam", "assignment"}:
         return "chat"
     return mode
-
-
-# ----------------------------------------------------------------------------
-# Build the graph
-# ----------------------------------------------------------------------------
+ 
 builder = StateGraph(ChatState)
 builder.add_node("chat", chat_node)
 builder.add_node("rag", rag_node)
@@ -239,7 +224,7 @@ builder.add_conditional_edges(
 for node in ["chat", "rag", "research", "interview", "exam", "assignment"]:
     builder.add_edge(node, END)
 
-# In-memory checkpointer = our "memory". No external DB.
+ 
 memory = MemorySaver()
 graph = builder.compile(checkpointer=memory)
 
