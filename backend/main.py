@@ -25,7 +25,7 @@ load_dotenv()
 
 app = FastAPI(title="MeraDost API")
 
-origins = os.getenv("FRONTEND_ORIGIN", "http://localhost:5173").split(",")   # after deployment, set FRONTEND_ORIGIN to your frontend's URL in .env
+origins = os.getenv("FRONTEND_ORIGIN", "https://mera-dost-student-ai-friend.vercel.app/").split(",")   # after deployment, set FRONTEND_ORIGIN to your frontend's URL in .env
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
